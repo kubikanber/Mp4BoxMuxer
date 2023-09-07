@@ -40,7 +40,7 @@ argparse._ = program_dili.gettext  # argparse modulundeki çeviriler için _ ye 
 
 # Komut satırı argümanlarının belirlenmesi
 argüman_dizesi = argparse.ArgumentParser(description=_("MP4 dosyalarını derlemek için") + dili_göster)
-argüman_dizesi.add_argument(_("girdi"),
+argüman_dizesi.add_argument(_("girdi"), # TODO: burada hata var. Dil cevrilmiş şeklinde alıyor.
                             help=_("Video dosyası girdisi"))
 argüman_dizesi.add_argument("-i", "--info",
                             help=_("Video dosyası hakkında bilgi verir."),
