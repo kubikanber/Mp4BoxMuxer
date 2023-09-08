@@ -13,7 +13,7 @@ import logging
 import argparse
 import gettext
 import locale
-import pdb
+import os
 
 # kayıt işlemleri logging. Basit bir log çıktısı için.
 logging.basicConfig(filename="Mp4BoxMuxer.log",
@@ -30,17 +30,23 @@ dili_göster = " (" + kullanıcı_dilini_bul[0] + ")"
 kullanıcı_dil_kodu = kullanıcı_dilini_bul[1]
 logging.info("Kullanıcı dili belirlendi. %s", dili_göster)
 
+# dil dosyaları kontrol
+dil_dosyaları_listesi = os.listdir("locales")  # dil dosyalarının yüklü olduğu klasör
+logging.debug("Dil dosyaları klasörü kontrolü : %s", dil_dosyaları_listesi)
+
 # Çeviri dosyalarının tanımlanması ve yüklenmesi
-dil_varmı = gettext.find("messages", localedir="locales", languages=["tr", "en"])
+seçilen_dil = ["tr"]  # deneme için tanımlanmıştır. Dil dosyaları konrol mekanizması için
+
+dil_varmı = gettext.find("messages", localedir="locales", languages=seçilen_dil)
 logging.debug("dil dosya kontrolu %s", dil_varmı)
-program_dili = gettext.translation("messages", localedir="locales", languages=["de", "en"])
+program_dili = gettext.translation("messages", localedir="locales", languages=seçilen_dil)
 logging.debug("Program dili alınıyor.: %s", program_dili)
 program_dili.install()
 argparse._ = program_dili.gettext  # argparse modulundeki çeviriler için _ ye atama yapıldı.
 
 # Komut satırı argümanlarının belirlenmesi
 argüman_dizesi = argparse.ArgumentParser(description=_("MP4 dosyalarını derlemek için") + dili_göster)
-argüman_dizesi.add_argument(_("girdi"), # TODO: burada hata var. Dil cevrilmiş şeklinde alıyor.
+argüman_dizesi.add_argument(_("girdi"),  # TODO: burada hata var. Dil cevrilmiş şeklinde alıyor.
                             help=_("Video dosyası girdisi"))
 argüman_dizesi.add_argument("-i", "--info",
                             help=_("Video dosyası hakkında bilgi verir."),
