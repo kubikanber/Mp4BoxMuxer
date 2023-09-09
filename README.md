@@ -9,3 +9,5 @@ Bu proje benim öğrenme ve  hobi projem olup, MP4Box multimedia packager için 
 ilk aşama basit MP4box argümani ile başlamak; verilen dosyasinin media bilgileri ekrana yazdırma (-info). 
 -info (string):                print movie info (no parameter) or track extended info with specified ID
 Buna ek olarak eklenenler birdenfazla dil seçeneği, log yaratma ve bunun için denetim mekanizmaları.
+
+Bu kodu görüp de öğrenmeme veya birlikte öğrenmeyi isteyecek, kodu geliştirecek tam bir programa dönüştürecek kişilere açıktır.
