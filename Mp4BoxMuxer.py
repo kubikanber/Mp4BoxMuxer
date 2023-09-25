@@ -16,24 +16,24 @@
 #       daha sonra benim belirdeğim öntanımlı şekle göre çıkış dosyası aynı yere sonuna mux elenerek yaratılacak, aynı
 #       isimde dosya var ise isminin sonuna sayı eklenecek.
 
-import logging
 import argparse
-import gettext
 import locale
 import os
 from Fonksiyonlar import *
 
 _ = gettext.gettext
+
 öntanımlı_diller = ["en", "tr"]
 
+######################################################
 # kayıt işlemleri; logging. Basit bir log çıktısı için.
 logging.basicConfig(filename="Mp4BoxMuxer.log",
                     filemode="w",
                     level=logging.DEBUG,
                     format="%(asctime)s - %(levelname)s: %(message)s")
 logging.info(_("Program başlıyor. Log tanımlamaları yapıldı."))
-# log dosyası için kod içersinde gerekli ayarlamalar yapılacak
 
+######################################################
 # Kullanılan dilini belirleme
 kullanıcı_dilini_bul = locale.getdefaultlocale()
 logging.debug(_("Yerel dil ve kodu alındı.: %s"), kullanıcı_dilini_bul)
@@ -45,6 +45,7 @@ logging.info(_("Kullanıcı dili belirlendi: %s - sistem Karakter kodu: %s"), si
 dil_dosyaları_listesi = os.listdir("locales")  # dil dosyalarının yüklü olduğu klasör
 logging.debug(_("Dil dosyaları klasörü kontrolü : %s"), dil_dosyaları_listesi)
 
+######################################################
 # Çeviri dosyalarının tanımlanması ve yüklenmesi
 seçilen_dil = ["de"]  # sistem_dili # ilerde belki okuduğu konfirigasyon dosyası içersinden veri alacak.
 if seçilen_dil[0] not in dil_dosyaları_listesi:
@@ -82,11 +83,14 @@ logging.debug(_("Çeviri yüklendi. (%s)"), seçilen_dil)
 argparse._ = program_dili.gettext  # argparse modulundeki çeviriler için _ ye atama yapıldı.
 logging.debug(_("Komut sistemi için çeviri yüklendi. (%s)"), seçilen_dil)
 
+######################################################
 # Komut satırı argümanlarının belirlenmesi
 argüman_dizesi = argparse.ArgumentParser(description=_("MP4 dosyalarını derlemek için") + sistem_dili)
 logging.debug(_("Komut sistemi çalıştırılıyor. Tanımlama yapıldı."))
 argüman_dizesi.add_argument(_("girdi"),
-                            help=_("Video dosyası girdisi"))
+                            help=_("Video dosyası girdisi"),
+                            type=str
+                            )
 logging.debug(_("Komut sistemine argüman atandı: '%s'"), _("girdi"))
 argüman_dizesi.add_argument("-i", "--info",
                             help=_("Video dosyası hakkında bilgi verir."),
@@ -95,12 +99,17 @@ logging.debug(_("Komut sistemine argüman atandı: '-i', '--info'"))
 argümanlar = argüman_dizesi.parse_args()
 logging.debug(_("Komut sistemi argümanlar işlendi."))
 
+###******************************************###
 # verilen argümanlara göre yapılan işlemler
-sonuç = getattr(argümanlar, _("girdi"))  # argümanlar.girdi
+sonuç = getattr(argümanlar, _("girdi"))  # argümanlar.girdi # TODO : fazladan girilen \ için düzeltme yapılmalı.
+sonuç = os.path.normpath(sonuç)
 logging.debug(_("Burada işlemler yapılıp sonuç çıkacak: sonuç değeri = %s"), sonuç)
 if getattr(argümanlar, "info"):  # argümanlar.info:
     logging.debug(_("Argümanlarda -i, --info kullanıldı. Dosya ayrıntıları gelecek."))
     print(_("verilen '{}' dosyası için detaylar:").format(sonuç))
+    # TODO: --info argümanu çalıştırılacak.
+    komut_çalıştır("info", dosya_yolu=getattr(argümanlar, _("girdi")), argüman_değeri=getattr(argümanlar, "info"))
+
     logging.debug("Dosya ayrıntıları verildi.")
 else:
     logging.debug(_("Hiç bir argüman girişi yapılmadı."))
