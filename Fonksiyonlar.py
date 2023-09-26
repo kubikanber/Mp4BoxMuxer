@@ -4,10 +4,11 @@
 
 import gettext
 import logging
+import os
 import platform
 import subprocess
 import sys
-import os
+from typing import List
 
 _ = gettext.gettext
 
@@ -35,7 +36,6 @@ def komut_çalıştır(*argüman, **argümanlar):
 # Çalıştırılaçak komut için argüman satırını oluşturma
 def komut_argüman_satırı_oluştur(*argüman, **argümanlar) -> str:
     komut_ekli = ""
-    dosya_yolu = ""
     dosya_yolu_ekli = ""
     dosya_ismi = ""
     poz_nolar = []
@@ -101,13 +101,13 @@ def sözlük_anaftar_kontrol(argüman, **argümanlar) -> bool:
 def komutu_çalıştır(komut_satırı: str):
     mp4box_komut = "mp4box"
     mp4box_komutu = mp4box_komut + komut_satırı
-    logging.debug("komutu_çalıştır: mp4box_komutu = %s", mp4box_komutu)
+    logging.debug(_("komutu_çalıştır: mp4box_komutu = %s"), mp4box_komutu)
     if platform.system() == "Windows":
         new_window_command = "cmd.exe  /c start ".split()
-        logging.info("komutu_çalıştır: Windows platformu için çalıştırılacak.")
+        logging.info(_("komutu_çalıştır: Windows platformu için çalıştırılacak."))
     else:  # XXX this can be made more portable
         new_window_command = "x-terminal-emulator -e".split()
-        logging.info("komutu_çalıştır: Başka bir platform için çalıştırılacak.")
+        logging.info(_("komutu_çalıştır: Başka bir platform için çalıştırılacak."))
 
     komut = [sys.executable, "-c",
              "import sys,os,subprocess; "
@@ -124,9 +124,71 @@ def komutu_çalıştır(komut_satırı: str):
 
              ]
     birleşim = new_window_command + komut + [mp4box_komut]
-    logging.debug("komutu_çalıştır: birleşik komut oluşturuldu: %s", birleşim)
+    logging.debug(_("komutu_çalıştır: birleşik komut oluşturuldu: %s"), birleşim)
 
     islem = subprocess.Popen(birleşim, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE, text=True,
                              bufsize=1)
     çıktı, hata_ç = islem.communicate()
-    logging.debug("komutu_çalıştır: işlem tamamlandı. çıktı: %s - Hata %s ", çıktı, hata_ç)
+    logging.debug(_("komutu_çalıştır: işlem tamamlandı. çıktı: %s - Hata %s"), çıktı, hata_ç)
+
+
+# -i --info komutuyla okunan dosya bilgikklerinin temp.txt dosyasından okunması
+# TODO: bundan sonraki aşağıdaki fonksiyonlar -> class olarak yeniden yazılmalı
+def info_gelen_veri() -> list:
+    info_veri_satırları = []
+    info_veri_dosyası = open("temp.txt", "r")
+    for satır in info_veri_dosyası:
+        info_veri_satırları.append(satır)
+    return info_veri_satırları
+
+
+# kaç Adet track olduğunu bulmak.
+# @track_sayısı:int
+def track_sayısı_bul(veriler) -> int:
+    track_sayısı = 0
+    for satır in veriler:
+        if "# Movie Info - " in satır:
+            track_sayısı = satır[len("# Movie Info - "):satır.find(" tracks")]
+    logging.debug(_("track_sayısı_bul: Track sayısı bulundu = %s"), track_sayısı)
+    return track_sayısı
+
+
+# track sayısına göre track yazan satır sırasını bulmak.
+# track # : satır sıra no
+def track_bilgileri(veriler: list):
+    track_satır_başlangıçları = {}
+    track_adeti = int(track_sayısı_bul(veriler))
+    print("Dosyada {} adet Track bulundu.".format(track_adeti))
+    logging.debug(_("track_bilgileri: track_adeti: %s %s"), type(track_adeti), track_adeti)
+    for track_sayısı in range(0, track_adeti):
+        # logging.debug("track_sayısı: %s", track_sayısı)
+        for satır in range(len(veriler)):
+            satır_bul = "# Track " + str(track_sayısı + 1)
+            # logging.debug("satır_bul: %s - Satır no: %s", satır_bul, satır)
+            if satır_bul in veriler[satır]:
+                # logging.debug("Bulunan Satır: %s-%s", satır, veriler[satır])
+                track_satır_başlangıçları["track_" + str(track_sayısı + 1)] = satır
+    logging.debug(_("track_bilgileri: Track Bilgileri: %s"), track_satır_başlangıçları)
+    track_bilgisi = track_bilgilerini_ata(track_satır_başlangıçları, veriler)  # satır numrası: satır içeriği
+    return track_bilgisi
+
+
+# satır numarası dan ilgli track # noya dönüştürme.--track isim numarası: satır içeriği
+def track_bilgilerini_ata(satır_no: dict, veriler: list) -> dict:
+    trackler = {}
+    for track, satır in satır_no.items():
+        track_satır_verileri = []
+        for satır_veri in range(int(satır), len(veriler)):
+            if veriler[satır_veri] == "\n":
+                break
+            track_satır_verileri.append(veriler[satır_veri])
+        logging.debug(_("track_bilgilerini_ata: Track %s ataması yapıldı. -%s"), satır, veriler[satır_veri])
+        trackler[str(track)] = track_satır_verileri
+    logging.debug(_("track_bilgilerini_ata: track dic %s"), trackler)
+    return trackler
+
+
+# kısaca track bilgileri yazacak,
+# girdi olarak tracks dic bulunuyor.
+def kısa_bilgi_ekranı(veriler: dict):
+    logging.debug("kısabilgi ekranı için: %s\n %s", veriler, len(veriler))

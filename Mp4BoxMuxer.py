@@ -18,7 +18,8 @@
 
 import argparse
 import locale
-import os
+import logging
+
 from Fonksiyonlar import *
 
 _ = gettext.gettext
@@ -109,9 +110,14 @@ if getattr(argümanlar, "info"):  # argümanlar.info:
     print(_("verilen '{}' dosyası için detaylar:").format(sonuç))
     # TODO: --info argümanu çalıştırılacak.
     komut_çalıştır("info", dosya_yolu=getattr(argümanlar, _("girdi")), argüman_değeri=getattr(argümanlar, "info"))
-
-    logging.debug("Dosya ayrıntıları verildi.")
+    logging.debug("İnfo komutu çalıştırıldı.")
+    veri = info_gelen_veri()    # video dosyasından okunan verilerin temp.txt dosyasınan alınması
+    logging.info("Dosya bilgisi:\n %s", veri)
+    tb = track_bilgileri(veri)
+    kısa_bilgi_ekranı(tb)
+    print("\t└─>Track no {} Media Type: {}")    # TODO : kısa bilgi yapılacak
+    logging.debug(_("Dosya ayrıntıları verildi."))
 else:
     logging.debug(_("Hiç bir argüman girişi yapılmadı."))
     print(sonuç)
-    logging.debug(_("Sonuç verildi: '%s'"), sonuç)
+    logging.debug(_("Sadece \"Girdi\" verildi: '%s'"), sonuç)
