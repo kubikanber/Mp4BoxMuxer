@@ -133,7 +133,19 @@ def komutu_çalıştır(komut_satırı: str):
 
 
 # -i --info komutuyla okunan dosya bilgikklerinin temp.txt dosyasından okunması
-# TODO: bundan sonraki aşağıdaki fonksiyonlar -> class olarak yeniden yazılmalı
+# TODO: bundan sonraki aşağıdaki fonksiyonlar -> class olarak yeniden yazılmalı veri sözlük haline getirilmeli
+# Burada gelen blgileri bir sözlük içersine yerleştirme yapılmalı Dic yapısı da
+# {track_adeti: sayı,
+#  TimeScale: sayı,
+#  Duration: sayı
+#  .... gelen bilgilere göre ekleme yapılmalı ...
+#  Track_sayı:{
+#               media_type: medya tipi
+#               ..... vs ardından gelen bilgiler eklenmeli
+#               }
+#  Track_sayı:{ .....}
+# ......
+#  }
 def info_gelen_veri() -> list:
     info_veri_satırları = []
     info_veri_dosyası = open("temp.txt", "r")
@@ -143,7 +155,7 @@ def info_gelen_veri() -> list:
 
 
 # kaç Adet track olduğunu bulmak.
-# @track_sayısı:int
+# @track_sayısı: int
 def track_sayısı_bul(veriler) -> int:
     track_sayısı = 0
     for satır in veriler:
@@ -153,12 +165,11 @@ def track_sayısı_bul(veriler) -> int:
     return track_sayısı
 
 
-# track sayısına göre track yazan satır sırasını bulmak.
-# track # : satır sıra no
-def track_bilgileri(veriler: list):
+# track sayısına göre track yazan satır sırasını bulmak için.
+# track #: satır sıra no
+def track_bilgileri(veriler: list) -> dict:
     track_satır_başlangıçları = {}
     track_adeti = int(track_sayısı_bul(veriler))
-    print("Dosyada {} adet Track bulundu.".format(track_adeti))
     logging.debug(_("track_bilgileri: track_adeti: %s %s"), type(track_adeti), track_adeti)
     for track_sayısı in range(0, track_adeti):
         # logging.debug("track_sayısı: %s", track_sayısı)
@@ -173,9 +184,11 @@ def track_bilgileri(veriler: list):
     return track_bilgisi
 
 
-# satır numarası dan ilgli track # noya dönüştürme.--track isim numarası: satır içeriği
+# satır numarası dan ilgili track # no'ya dönüştürme.--
+# track isim numarası: satır içeriği
 def track_bilgilerini_ata(satır_no: dict, veriler: list) -> dict:
     trackler = {}
+    satır_veri = 0
     for track, satır in satır_no.items():
         track_satır_verileri = []
         for satır_veri in range(int(satır), len(veriler)):
@@ -186,6 +199,35 @@ def track_bilgilerini_ata(satır_no: dict, veriler: list) -> dict:
         trackler[str(track)] = track_satır_verileri
     logging.debug(_("track_bilgilerini_ata: track dic %s"), trackler)
     return trackler
+
+
+def media_tipini_belirle(veriler: dict) -> dict:
+    track_media_tipi = {}
+    media_tipi = ""
+    for track, satırlar in veriler.items():
+        for satır in satırlar:
+            if "Media Type: " in satır:
+                media_tipi = satır[len("Media Type: "):]
+                logging.debug(_("Media tipi bulundu: %s"), media_tipi)
+        track_media_tipi[track] = media_tipi
+        logging.debug(_("track_media_tipi: %s"), track_media_tipi)
+    return track_media_tipi
+
+
+# Tracler e kaç adet Video, Ses izi olduğunu bulur.
+# Media_tipi : sayı
+def media_tipi_say(veriler: dict) -> dict:
+    media_tipi_sayısı = {}
+    for track, media in veriler.items():
+        if str(media).startswith("vide:"):
+            media_tipi_sayısı["Video"] = media_tipi_sayısı.get("Video", 0) + 1
+            logging.debug(_("Video izi bulundu. 1 eklendi."))
+        if str(media).startswith("soun:"):
+            media_tipi_sayısı["Sound"] = media_tipi_sayısı.get("Sound", 0) + 1
+            logging.debug(_("Ses izi bulundu. 1 eklendi"))
+    mesaj = _("Toplamda %s adet Video, %s adet Ses izi bulundu.")
+    logging.debug(mesaj, media_tipi_sayısı.get("Video"), media_tipi_sayısı.get("Sound"))
+    return media_tipi_sayısı
 
 
 # kısaca track bilgileri yazacak,

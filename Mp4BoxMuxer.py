@@ -111,11 +111,16 @@ if getattr(argümanlar, "info"):  # argümanlar.info:
     # TODO: --info argümanu çalıştırılacak.
     komut_çalıştır("info", dosya_yolu=getattr(argümanlar, _("girdi")), argüman_değeri=getattr(argümanlar, "info"))
     logging.debug("İnfo komutu çalıştırıldı.")
-    veri = info_gelen_veri()    # video dosyasından okunan verilerin temp.txt dosyasınan alınması
+    veri = info_gelen_veri()  # video dosyasından okunan verilerin temp.txt dosyasınan alınması
     logging.info("Dosya bilgisi:\n %s", veri)
     tb = track_bilgileri(veri)
+    print("Dosyada {} adet Track bulundu.".format(str(len(tb))), end="")
+    mtb = media_tipini_belirle(tb)
+    mts = media_tipi_say(mtb)
+    for media_ismi, media_sayısı in mts.items():
+        print("--> {}: {}".format(str(media_ismi), str(media_sayısı)), end=", ")
     kısa_bilgi_ekranı(tb)
-    print("\t└─>Track no {} Media Type: {}")    # TODO : kısa bilgi yapılacak
+    print("\n\t└─>Track no {} Media Type: {}")  # TODO : kısa bilgi yapılacak
     logging.debug(_("Dosya ayrıntıları verildi."))
 else:
     logging.debug(_("Hiç bir argüman girişi yapılmadı."))
